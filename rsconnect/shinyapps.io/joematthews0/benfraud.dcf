@@ -1,0 +1,11 @@
+name: benfraud
+title:
+username:
+account: joematthews0
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8380207
+bundleId: 6883251
+url: https://joematthews0.shinyapps.io/benfraud/
+when: 1677242027.44432
+lastSyncTime: 1677242027.44433
