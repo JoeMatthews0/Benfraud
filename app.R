@@ -1,4 +1,4 @@
-library(shiny); library(shinythemes); library(ggplot2); library(DT); library(bslib)
+library(shiny); library(shinythemes); library(ggplot2); library(DT); library(bslib); library(gridExtra)
 
 ui <- fluidPage(theme = bs_theme(
   bg = "#0b3d91", fg = "white", primary = "#FCC780",
@@ -10,10 +10,10 @@ ui <- fluidPage(theme = bs_theme(
                      width = 200,
                      align = "right"),
 
-    h3("Enter your sample of data (numbers >= 1) separated by commas"),
+    h3("Enter your sample of data (values between £1000 and £10000) separated by commas"),
     textInput(inputId = 'sample1',
               label = NULL,
-              value = "1, 10, 100"),
+              value = "1000, 2000, 3000"),
     h3("Our sample so far:"),
     verbatimTextOutput("sampleVector"),
     plotOutput("hist"),
@@ -82,10 +82,27 @@ server <- function(input, output) {
     })
     
     output$hist = renderPlot({
-      df = data.frame(obs = sample1())
-      ggplot(data = df, aes(x = obs)) + geom_histogram(fill = "blue") + 
+      df = data.frame(obs = sample1(),
+                      claim = 1 : length(sample1()))
+      g1 <- ggplot(data = df, aes(x = obs)) + geom_histogram(fill = "blue") + 
         xlab("Sample") +
-        ylab("Frequency")
+        ylab("Frequency") +
+        scale_x_log10()
+      g2 <- ggplot(data = df, aes(y = obs)) +
+        geom_boxplot(fill = "blue") +
+        ylab("Claim") +
+        theme(axis.title.x=element_blank(),
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank()) +
+              scale_y_log10()
+      g3 <- ggplot(data = df, aes(x = claim, y = obs)) +
+        geom_line(col = "blue") +
+        geom_point(col = "blue") +
+        scale_x_discrete(limits = factor(1 : length(sample1())), labels = 1 : length(sample1())) +
+        xlab("Claim") +
+        ylab("Sample") +
+        scale_y_log10()
+      grid.arrange(g1, g2, g3, nrow = 1)
     })
     
     output$summaryText <- renderText({
@@ -172,7 +189,7 @@ server <- function(input, output) {
     
     output$propPlot2 = renderPlot({
       df = data.frame(Digit = 1 : 9,
-                      Proportion = c(benf.prop, lead.figs / sum(leadFigs2())),
+                      Proportion = c(benf.prop, leadFigs2() / sum(leadFigs2())),
                       Group = rep(c("Benford", "Sample"), each = 9)
       )
       ggplot(data = df, aes(x = Digit, y = Proportion, col = Group)) +
